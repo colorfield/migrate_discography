@@ -1,0 +1,29 @@
+id: track_paragraphs
+label: Track Paragraphs
+migration_group: discography
+
+source:
+  plugin: csv
+  path: modules/custom/migrate_discography/data/album_tracks.csv
+  header_row_count: 1
+  keys:
+    - id
+
+process:
+  field_title: track_title
+  field_link:
+    plugin: urlencode
+    source: track_url
+
+destination:
+  plugin: entity_reference_revisions:paragraph
+  default_bundle: track
+
+migration_dependencies:
+  required: {}
+  optional: {}
+
+dependencies:
+  enforced:
+    module:
+      - migrate_discography

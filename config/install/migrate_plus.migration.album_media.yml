@@ -1,0 +1,66 @@
+id: album_media
+label: Album Media
+migration_group: discography
+
+source:
+  plugin: url
+  data_fetcher_plugin: file
+  # Make use of a custom parser here, to convert the CSV
+  # into associative arrays.
+  data_parser_plugin: album_parser
+  track_changes: true
+  urls: modules/custom/migrate_discography/data/album_tracks.csv
+  item_selector: /albums
+  fields:
+     -
+      name: album_title
+      label: Album title
+      selector: album_title
+     -
+      # This field does not exist as is in the CSV
+      # and is provided by the data parser.
+      name: tracks
+      label: Tracks
+      selector: tracks
+  ids:
+    album_title:
+      type: string
+
+process:
+  # Media name.
+  name: album_title
+  # Paragraphs field.
+  field_tracks:
+    plugin: sub_process
+    source: tracks
+    process:
+      temporary_ids:
+        plugin: migration_lookup
+        migration: track_paragraphs
+        # The id is the one from the CSV,
+        # used to get the right paragraph.
+        source: id
+      target_id:
+        plugin: extract
+        source: '@temporary_ids'
+        index:
+          - 0
+      target_revision_id:
+        plugin: extract
+        source: '@temporary_ids'
+        index:
+          - 1
+
+destination:
+  plugin: entity:media
+  default_bundle: album
+
+migration_dependencies:
+  required:
+    - track_paragraphs
+  optional: {}
+
+dependencies:
+  enforced:
+    module:
+      - migrate_discography
